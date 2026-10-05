@@ -120,7 +120,7 @@ p { margin: 0 0 1em; }
 /* ---------- hero (home) ---------- */
 .hero { position: relative; padding: 120px 0 60px; min-height: 100svh; display: flex; align-items: center; overflow: hidden; }
 .hero .wrap { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, .9fr); gap: clamp(24px, 4vw, 60px); align-items: center; }
-.hero h1 { font-size: clamp(3.4rem, 9.4vw, 9.2rem); }
+.hero h1 { font-size: clamp(3.4rem, 9.4vw, 9.2rem); line-height: .9; }
 .hero-title .line { display: block; }
 .hero .lead { margin: 28px 0 34px; }
 .hero-meta { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 34px; }
@@ -227,10 +227,14 @@ p { margin: 0 0 1em; }
 
 /* ---------- quotes marquee ---------- */
 .qtrack { display: inline-flex; gap: 18px; padding-right: 18px; will-change: transform; }
-.q { flex: 0 0 auto; width: min(460px, 80vw); white-space: normal; background: var(--cream); color: var(--ink); border-radius: var(--r); padding: 28px 30px; }
+.q { flex: 0 0 auto; width: min(460px, 80vw); margin: 0; white-space: normal; background: var(--cream); color: var(--ink); border-radius: var(--r); padding: 28px 30px; }
 .q blockquote { margin: 0; font-family: var(--serif); font-size: 1.6rem; line-height: 1.2; }
 .q cite { display: block; margin-top: 16px; font-style: normal; font-weight: 700; font-size: .9rem; color: var(--crimson); }
-.quotes-mq { overflow: hidden; white-space: nowrap; }
+.quotes-mq { overflow-x: auto; overflow-y: hidden; white-space: nowrap; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; cursor: grab; padding: 4px 0; }
+.quotes-mq::-webkit-scrollbar { display: none; }
+.quotes-mq.drag { cursor: grabbing; user-select: none; -webkit-user-select: none; }
+.quotes-mq.drag .q { pointer-events: none; }
+.quotes-hint { display: flex; align-items: center; gap: 10px; margin-top: 22px; font-size: .85rem; font-weight: 700; color: var(--wine); opacity: .75; }
 
 /* ---------- big CTA ---------- */
 .cta { text-align: center; }

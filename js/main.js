@@ -74,6 +74,69 @@
     });
   });
 
+  /* creator quotes: a native horizontal scroller that drifts on its own,
+     loops forever, and can be swiped (touch) or dragged (mouse) in both directions */
+  document.querySelectorAll('.quotes-mq').forEach(function (box) {
+    var track = box.querySelector('.qtrack');
+    if (!track) return;
+    var half = 0, pos = 0, hold = 0, last = 0, boost = 0, visible = false, drag = null;
+    var SPEED = 45; // px per second
+    var measure = function () {
+      half = track.scrollWidth / 2;
+      if (!pos || pos > half) { pos = half * 0.5; box.scrollLeft = pos; }
+    };
+    var wrapPos = function () {
+      if (!half) return;
+      if (pos >= half) pos -= half;
+      else if (pos < 1) pos += half;
+    };
+    var pause = function (ms) { hold = performance.now() + ms; };
+    var frame = function (t) {
+      var dt = last ? Math.min(t - last, 64) : 16; last = t;
+      if (visible && half) {
+        if (Math.abs(box.scrollLeft - Math.round(pos)) > 2) pos = box.scrollLeft; // user scrolled natively
+        if (!drag && t > hold && !reduce) pos += (SPEED + boost) * dt / 1000;
+        boost *= 0.94;
+        wrapPos();
+        box.scrollLeft = pos;
+      }
+      requestAnimationFrame(frame);
+    };
+    if ('IntersectionObserver' in window) {
+      new IntersectionObserver(function (e) { visible = e[0].isIntersecting; }, { threshold: 0 }).observe(box);
+    } else { visible = true; }
+    // page scroll gives the strip a little push
+    var lastY = window.scrollY;
+    window.addEventListener('scroll', function () {
+      var dy = window.scrollY - lastY; lastY = window.scrollY;
+      if (visible) boost = Math.min(boost + Math.abs(dy) * 1.5, 500);
+    }, { passive: true });
+    // touch + trackpad: let the browser scroll natively, pause the drift a moment
+    box.addEventListener('touchstart', function () { pause(2500); }, { passive: true });
+    box.addEventListener('wheel', function () { pause(2000); }, { passive: true });
+    // mouse: click-and-drag to scroll
+    box.addEventListener('pointerdown', function (e) {
+      if (e.pointerType !== 'mouse' || e.button !== 0) return;
+      drag = { x: e.clientX, start: pos, moved: false };
+      box.setPointerCapture(e.pointerId);
+    });
+    box.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var dx = e.clientX - drag.x;
+      if (Math.abs(dx) > 3) { drag.moved = true; box.classList.add('drag'); }
+      pos = drag.start - dx; wrapPos(); box.scrollLeft = pos;
+    });
+    var end = function () { if (!drag) return; drag = null; box.classList.remove('drag'); pause(1500); };
+    box.addEventListener('pointerup', end);
+    box.addEventListener('pointercancel', end);
+    box.addEventListener('lostpointercapture', end);
+    window.addEventListener('resize', measure);
+    window.addEventListener('load', measure);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(measure);
+    measure();
+    requestAnimationFrame(frame);
+  });
+
   /* today's vibe (Delhi time) */
   var names = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];
   var today = new Date().toLocaleDateString('en-US', { weekday: 'long', timeZone: 'Asia/Kolkata' });

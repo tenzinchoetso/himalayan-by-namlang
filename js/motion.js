@@ -37,7 +37,11 @@
   $$('.hero-title').forEach(function (h) {
     if (hasSplit) {
       var s = SplitText.create(h, { type: 'words', mask: 'words' });
-      gsap.from(s.words, { yPercent: 115, duration: 1.05, ease: 'power4.out', stagger: 0.07, delay: delay + 0.05 });
+      // give each clipping mask room for descenders (g, y, p) and the italic overhang, without moving the layout
+      var masks = s.masks && s.masks.length ? s.masks : [].slice.call(h.querySelectorAll('div[style*="overflow"]'));
+      gsap.set(masks, { padding: '0.04em 0.14em 0.24em', margin: '-0.04em -0.14em -0.24em' });
+      // once the words have risen, drop the masks so nothing stays clipped
+      gsap.from(s.words, { yPercent: 125, duration: 1.05, ease: 'power4.out', stagger: 0.07, delay: delay + 0.05, onComplete: function () { s.revert(); } });
     } else {
       gsap.from(h, { y: 40, opacity: 0, duration: 1, delay: delay });
     }
@@ -90,7 +94,7 @@
     }
   }
   $$('.mq-track').forEach(function (t) { marquee(t, 70, false); });
-  $$('.qtrack').forEach(function (t) { marquee(t, 40, true); });
+  /* the creator-quote strip is a native scroller animated in main.js, so it also works without GSAP */
 
   /* ---------- statement: words light up as you read ---------- */
   $$('.split-words').forEach(function (p) {
